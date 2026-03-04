@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>McLean High School Campus Navigator</title>
+    <link rel="icon" type="image/png" href="logo.png">
     <style>
         :root {
             --bg-0: #080a0f;
@@ -62,13 +63,88 @@
             pointer-events: none !important;
         }
 
+        body.startup-loading #pause-overlay,
+        body.startup-loading #ui-shell,
+        body.startup-loading #crosshair,
+        body.startup-loading #cursor-tint,
+        body.startup-loading #model-glow-overlay,
+        body.startup-loading .panel-collapse-tab {
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+
+        #startup-loading {
+            position: fixed;
+            inset: 0;
+            z-index: 260;
+            display: grid;
+            place-items: center;
+            pointer-events: auto;
+            opacity: 1;
+            transition: opacity 360ms ease;
+            background:
+                radial-gradient(circle at 50% 42%, rgba(136, 14, 30, 0.16), transparent 42%),
+                linear-gradient(180deg, rgba(4, 7, 12, 0.92), rgba(6, 10, 15, 0.96));
+        }
+
+        body.startup-ready #startup-loading {
+            opacity: 0;
+        }
+
+        #startup-loading[hidden] {
+            display: none;
+        }
+
+        .startup-loading-card {
+            width: min(360px, calc(100vw - 40px));
+            border-radius: 12px;
+            border: 1px solid rgba(195, 200, 210, 0.26);
+            background: rgba(9, 13, 20, 0.8);
+            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45);
+            padding: 16px 16px 14px;
+            text-align: center;
+            backdrop-filter: blur(6px);
+        }
+
+        .startup-loading-title {
+            margin: 0;
+            font-size: 13px;
+            letter-spacing: 0.09em;
+            text-transform: uppercase;
+            color: var(--silver);
+        }
+
+        .startup-loading-subtitle {
+            margin: 6px 0 10px;
+            font-size: 12px;
+            color: var(--silver-soft);
+        }
+
+        .startup-loading-track {
+            position: relative;
+            height: 7px;
+            border-radius: 999px;
+            background: rgba(18, 24, 34, 0.86);
+            border: 1px solid rgba(184, 191, 203, 0.22);
+            overflow: hidden;
+        }
+
+        #startup-loading-bar {
+            display: block;
+            width: 6%;
+            height: 100%;
+            border-radius: inherit;
+            background: linear-gradient(90deg, rgba(137, 18, 34, 0.95), rgba(193, 34, 52, 0.95));
+            transition: width 240ms ease;
+        }
+
         canvas {
             display: block;
             transition: filter 140ms ease;
         }
 
         body.paused-view canvas {
-            filter: grayscale(0.32) brightness(0.72);
+            filter: grayscale(0.12) brightness(0.9);
         }
 
         body.intro-cinematic canvas,
@@ -453,14 +529,15 @@
         }
 
         .entry-logo {
-            width: 44px;
-            height: 44px;
-            border-radius: 9px;
-            border: 1px solid rgba(205, 211, 220, 0.32);
-            background: rgba(255, 255, 255, 0.06);
+            width: 58px;
+            height: 58px;
             object-fit: contain;
-            padding: 4px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.28);
+            padding: 0;
+            border: none;
+            background: transparent;
+            border-radius: 0;
+            box-shadow: none;
+            filter: brightness(0.9);
         }
 
         .entry-kicker,
@@ -474,6 +551,10 @@
             text-shadow:
                 0 1px 0 rgba(248, 251, 255, 0.22),
                 0 2px 0 rgba(164, 174, 188, 0.26);
+        }
+
+        .entry-kicker {
+            font-size: 16px;
         }
 
         .entry-title {
@@ -568,6 +649,147 @@
 
         .entry-hint strong {
             color: inherit;
+        }
+
+        .intro-controls-diagram {
+            position: absolute;
+            left: 50%;
+            top: 52%;
+            transform: translate(-50%, -50%) translateY(10px) scale(0.985);
+            width: min(520px, calc(100vw - 36px));
+            pointer-events: none;
+            z-index: 2;
+            text-align: center;
+            opacity: 0;
+            filter: blur(4px);
+            transition:
+                opacity 520ms cubic-bezier(0.16, 1, 0.3, 1),
+                transform 720ms cubic-bezier(0.16, 1, 0.3, 1),
+                filter 520ms cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .intro-controls-diagram::before {
+            content: "";
+            position: absolute;
+            inset: -12px -14px;
+            border-radius: 12px;
+            background: rgba(2, 4, 7, 0.58);
+            border: 1px solid rgba(202, 209, 220, 0.2);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.24);
+            z-index: -1;
+        }
+
+        body.intro-cards-ready:not(.intro-exiting) #pause-overlay[data-overlay-mode="intro"] .intro-controls-diagram {
+            opacity: 0.74;
+            transform: translate(-50%, -50%) translateY(0) scale(1);
+            filter: blur(0);
+            transition-delay: 220ms;
+        }
+
+        body.intro-exiting #pause-overlay[data-overlay-mode="intro"] .intro-controls-diagram {
+            opacity: 0;
+            transform: translate(-50%, -50%) translateY(-12px) scale(0.985);
+            filter: blur(5px);
+            transition-duration: 220ms;
+        }
+
+        .intro-controls-grid {
+            display: inline-grid;
+            grid-template-columns: auto auto;
+            column-gap: 12px;
+            row-gap: 0;
+            align-items: start;
+            justify-content: center;
+        }
+
+        .intro-controls-side {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: center;
+            margin: 0;
+        }
+
+        .intro-controls-keys {
+            display: inline-flex;
+            flex-direction: column;
+            gap: 7px;
+            align-items: center;
+            margin: 0;
+        }
+
+        .intro-controls-row {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+        }
+
+        .intro-controls-row-stack {
+            flex-direction: column;
+        }
+
+        .intro-key {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 28px;
+            height: 28px;
+            padding: 0 10px;
+            border-radius: 6px;
+            border: 1px solid rgba(209, 216, 226, 0.42);
+            background: rgba(7, 10, 14, 0.26);
+            color: rgba(238, 243, 250, 0.88);
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .intro-controls-keys .intro-key {
+            width: 30px;
+            min-width: 30px;
+            padding: 0;
+        }
+
+        .intro-key.intro-key-wide {
+            min-width: 124px;
+        }
+
+        .intro-key-arrow {
+            justify-content: space-between;
+            min-width: 132px;
+            padding: 0 12px;
+            gap: 14px;
+        }
+
+        .intro-arrow {
+            font-size: 13px;
+            color: rgba(246, 250, 255, 0.86);
+            line-height: 1;
+        }
+
+        .intro-controls-caption {
+            margin: 0;
+            font-size: 11px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: rgba(209, 216, 226, 0.74);
+        }
+
+        .intro-controls-note {
+            margin: 10px 0 0;
+            font-size: 11px;
+            letter-spacing: 0.04em;
+            color: rgba(224, 230, 239, 0.68);
+        }
+
+        .intro-controls-title {
+            margin: 0 0 8px;
+            font-size: 12px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: rgba(228, 233, 240, 0.82);
         }
 
         .pause-card {
@@ -712,8 +934,13 @@
         @keyframes panel-shell-enter-left {
             0% {
                 opacity: 0;
-                transform: translate3d(-14px, -12px, 0) scale(0.992);
-                filter: blur(2px);
+                transform: translate3d(-6px, -20vh, 0) scale(0.982);
+                filter: blur(3px);
+            }
+            68% {
+                opacity: 1;
+                transform: translate3d(0, 6px, 0) scale(1.002);
+                filter: blur(0);
             }
             100% {
                 opacity: 1;
@@ -725,8 +952,13 @@
         @keyframes panel-shell-enter-right {
             0% {
                 opacity: 0;
-                transform: translate3d(14px, 12px, 0) scale(0.992);
-                filter: blur(2px);
+                transform: translate3d(6px, -20vh, 0) scale(0.982);
+                filter: blur(3px);
+            }
+            68% {
+                opacity: 1;
+                transform: translate3d(0, 6px, 0) scale(1.002);
+                filter: blur(0);
             }
             100% {
                 opacity: 1;
@@ -738,12 +970,12 @@
         @keyframes panel-item-enter {
             0% {
                 opacity: 0;
-                transform: translateY(12px) scale(0.988);
+                transform: translateY(-22px) scale(0.986);
                 filter: blur(4px);
             }
             62% {
                 opacity: 1;
-                transform: translateY(-1px) scale(1.003);
+                transform: translateY(3px) scale(1.003);
                 filter: blur(0);
             }
             100% {
@@ -837,13 +1069,15 @@
         }
 
         .brand-logo {
-            width: 56px;
-            height: 56px;
-            border-radius: 10px;
-            border: 1px solid rgba(205, 210, 219, 0.3);
-            background: rgba(255, 255, 255, 0.04);
+            width: 72px;
+            height: 72px;
             object-fit: contain;
-            padding: 6px;
+            padding: 0;
+            border: none;
+            background: transparent;
+            border-radius: 0;
+            box-shadow: none;
+            filter: brightness(0.9);
             flex-shrink: 0;
         }
 
@@ -939,11 +1173,11 @@
         }
 
         body.ui-panels-pending #hud {
-            transform: translateY(-12px);
+            transform: translateY(-20px);
         }
 
         body.ui-panels-pending #side-menu {
-            transform: translateY(12px);
+            transform: translateY(-20px);
         }
 
         body.ui-panels-entering #hud {
@@ -957,11 +1191,24 @@
         body.ui-panels-entering #hud .brand,
         body.ui-panels-entering #side-menu > * {
             opacity: 0;
-            transform: translateY(10px) scale(0.99);
+            transform: translateY(-16px) scale(0.988);
             filter: blur(4px);
             animation: panel-item-enter 620ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
             animation-delay: calc(var(--panel-item-index, 0) * 48ms);
         }
+
+        body.ui-panels-entering #hud .brand > * {
+            opacity: 0;
+            transform: translateY(-14px) scale(0.992);
+            filter: blur(3px);
+            animation: panel-item-enter 620ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation-delay: calc(110ms + (var(--hud-item-index, 0) * 56ms));
+        }
+
+        body.ui-panels-entering #hud .brand > *:nth-child(1) { --hud-item-index: 0; }
+        body.ui-panels-entering #hud .brand > *:nth-child(2) { --hud-item-index: 1; }
+        body.ui-panels-entering #hud .brand > *:nth-child(3) { --hud-item-index: 2; }
+        body.ui-panels-entering #hud .brand > *:nth-child(4) { --hud-item-index: 3; }
 
         #side-menu.panel-collapsed {
             transform: translateX(calc(100% + 32px));
@@ -1075,6 +1322,7 @@
             body.ui-panels-entering #hud,
             body.ui-panels-entering #side-menu,
             body.ui-panels-entering #hud .brand,
+            body.ui-panels-entering #hud .brand > *,
             body.ui-panels-entering #side-menu > * {
                 animation: none !important;
                 opacity: 1 !important;
@@ -1093,18 +1341,20 @@
         }
 
         .panel-collapse-tab {
+            --edge-glow-x: 50%;
+            --edge-glow-y: 50%;
             position: fixed;
             top: 50vh;
             left: 6px;
             transform: translateY(-50%);
-            width: 14px;
-            height: 22px;
+            width: 18px;
+            height: 28px;
             min-height: 0;
             padding: 0;
             border: none;
-            border-radius: 0;
+            border-radius: 6px;
             background: transparent;
-            box-shadow: none;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.22);
             z-index: 170;
             display: grid;
             place-items: center;
@@ -1116,14 +1366,67 @@
             transition: opacity 160ms ease, color 160ms ease, transform 180ms ease;
         }
 
-        .panel-collapse-tab::before,
+        .panel-collapse-tab::before {
+            content: "";
+            position: absolute;
+            inset: -1px;
+            border-radius: inherit;
+            padding: 1px;
+            background:
+                radial-gradient(
+                    circle at var(--edge-glow-x) var(--edge-glow-y),
+                    rgba(246, 248, 251, 0.96) 0%,
+                    rgba(255, 84, 104, 0.56) 14%,
+                    rgba(190, 30, 45, 0.25) 29%,
+                    rgba(190, 30, 45, 0) 46%
+                ),
+                linear-gradient(
+                    120deg,
+                    #2a0208 0%,
+                    #7c0d1d 12%,
+                    #be1e2d 24%,
+                    #ff5468 36%,
+                    #f6f8fb 50%,
+                    #ff5468 64%,
+                    #be1e2d 76%,
+                    #7c0d1d 88%,
+                    #2a0208 100%
+                );
+            background-size: 140% 140%, 260% 100%;
+            background-position: var(--edge-glow-x) var(--edge-glow-y), 0 0;
+            pointer-events: none;
+            opacity: 0.24;
+            z-index: -2;
+            animation: panel-edge-glowing 30s linear infinite;
+            transition: opacity 160ms ease;
+            -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+        }
+
         .panel-collapse-tab::after {
-            display: none !important;
+            content: "";
+            position: absolute;
+            inset: 1px;
+            border-radius: calc(6px - 1px);
+            background: rgba(24, 31, 41, 0.93);
+            border: none;
+            z-index: -1;
+            transition: background 160ms ease, border-color 160ms ease;
         }
 
         .panel-collapse-tab:hover {
             opacity: 1;
             color: #f2f6fb;
+        }
+
+        .panel-collapse-tab:hover::before {
+            opacity: 0.62;
+            animation-duration: 24s;
+        }
+
+        .panel-collapse-tab:hover::after {
+            background: rgba(34, 42, 53, 0.96);
         }
 
         .panel-collapse-tab:active {
@@ -1149,6 +1452,8 @@
             line-height: 1;
             transform: none;
             pointer-events: none;
+            position: relative;
+            z-index: 1;
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -1478,9 +1783,22 @@
 
         .search-entry-head {
             display: grid;
-            grid-template-columns: auto 1fr auto auto auto auto;
+            grid-template-columns: minmax(0, 1fr) auto auto auto auto;
             align-items: center;
             gap: 4px;
+        }
+
+        .search-entry-toggle {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            min-width: 0;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .search-entry-toggle .search-term {
+            flex: 1 1 auto;
         }
 
         .search-vis-toggle {
@@ -1629,6 +1947,16 @@
             color: var(--silver-soft);
         }
 
+        .search-object-toggle {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            min-width: 0;
+            flex: 1 1 auto;
+            cursor: pointer;
+            user-select: none;
+        }
+
         .search-object-row input {
             margin: 0;
             width: 14px;
@@ -1739,9 +2067,9 @@
             }
 
             .entry-logo {
-                width: 38px;
-                height: 38px;
-                padding: 3px;
+                width: 50px;
+                height: 50px;
+                padding: 0;
             }
 
             .entry-title-main,
@@ -1766,9 +2094,45 @@
                 font-size: 9px;
             }
 
+            .intro-controls-diagram {
+                top: 57%;
+                width: calc(100vw - 24px);
+            }
+
+            .intro-controls-diagram::before {
+                inset: -10px -10px;
+            }
+
+            .intro-controls-grid {
+                column-gap: 10px;
+                row-gap: 0;
+            }
+
+            .intro-key {
+                min-width: 25px;
+                height: 25px;
+                padding: 0 8px;
+                font-size: 11px;
+            }
+
+            .intro-key.intro-key-wide {
+                min-width: 98px;
+            }
+
+            .intro-key-arrow {
+                min-width: 106px;
+                padding: 0 10px;
+                gap: 11px;
+            }
+
+            .intro-controls-caption,
+            .intro-controls-note {
+                font-size: 10px;
+            }
+
             .brand-logo {
-                width: 46px;
-                height: 46px;
+                width: 58px;
+                height: 58px;
             }
 
             .brand h1 {
@@ -1808,10 +2172,19 @@
         }
     </style>
 </head>
-<body data-preload-intro="1">
+<body data-preload-intro="1" class="startup-loading">
     <div id="crosshair"></div>
     <div id="cursor-tint" aria-hidden="true"></div>
     <div id="model-glow-overlay" aria-hidden="true"></div>
+    <div id="startup-loading" aria-live="polite" aria-label="Loading scene">
+        <div class="startup-loading-card">
+            <p class="startup-loading-title">Preparing 3D Scene</p>
+            <p class="startup-loading-subtitle" id="startup-loading-text">Loading model...</p>
+            <div class="startup-loading-track">
+                <span id="startup-loading-bar"></span>
+            </div>
+        </div>
+    </div>
     <div id="pause-overlay" aria-live="polite" data-overlay-mode="intro">
         <section id="entry-sequence" aria-label="Entry animation">
             <div class="entry-content">
@@ -1825,7 +2198,39 @@
                 </h2>
                 <p class="entry-copy">Explore McLean High School with a 3D interactive model.</p>
                 <p class="entry-click-hint">Click anywhere to begin</p>
-                <p class="entry-hint"><small>By</small> Jonathan Leong</p>
+                <p class="entry-hint">By Jonathan Leong</p>
+            </div>
+            <div class="intro-controls-diagram" aria-hidden="true">
+                <p class="intro-controls-title">Controls</p>
+                <div class="intro-controls-grid">
+                    <div class="intro-controls-side">
+                        <div class="intro-controls-keys">
+                            <div class="intro-controls-row">
+                                <span class="intro-key">W</span>
+                            </div>
+                            <div class="intro-controls-row">
+                                <span class="intro-key">A</span>
+                                <span class="intro-key">S</span>
+                                <span class="intro-key">D</span>
+                            </div>
+                        </div>
+                        <p class="intro-controls-caption">Move</p>
+                    </div>
+                    <div class="intro-controls-side">
+                        <div class="intro-controls-row intro-controls-row-stack">
+                            <span class="intro-key intro-key-wide intro-key-arrow">
+                                <span>Space</span>
+                                <span class="intro-arrow" aria-hidden="true">↑</span>
+                            </span>
+                            <span class="intro-key intro-key-wide intro-key-arrow">
+                                <span>Shift</span>
+                                <span class="intro-arrow" aria-hidden="true">↓</span>
+                            </span>
+                        </div>
+                        <p class="intro-controls-caption">Jump / Ascend / Descend</p>
+                    </div>
+                </div>
+                <p class="intro-controls-note">Scroll adjusts speed | Double-tap Space toggles fly/walk</p>
             </div>
         </section>
         <div class="pause-card" id="pause-card">
@@ -1872,6 +2277,10 @@
             <div class="stat-row"><span>Looking At</span><strong id="look-at-val">None</strong></div>
             <div class="btn-row">
                 <button id="split-floors-btn" class="btn-secondary" disabled>Separate Floors</button>
+            </div>
+            <div class="btn-row">
+                <button id="top-view-btn" class="btn-primary" type="button">Top View</button>
+                <button id="recenter-btn" class="btn-primary" type="button">Re-Center</button>
             </div>
 
             <p class="field-label">Quick Highlights</p>
@@ -1938,7 +2347,7 @@
         const COLLISION_STEPS = 5;
         const GRAVITY = 50;
         const JUMP_VELOCITY = 14;
-        const DOUBLE_SPACE_MS = 280;
+        const DOUBLE_SPACE_MS = 380;
         const COYOTE_TIME_MS = 160;
         const JUMP_SNAP_GRACE_MS = 180;
         const WALK_TOGGLE_SNAP_GRACE_MS = 220;
@@ -1983,9 +2392,13 @@
         const UI_PANELS_AFTER_ENTER_CLICK_MS = 500;
         const UI_PANELS_ENTER_ANIM_MS = 980;
         const PANEL_COLLAPSE_ANIM_MS = 640;
-        const STAIR_HIGHLIGHT_COLOR = "#e4e9f3";
+        const STARTUP_LOADING_FADE_MS = 380;
+        const TOP_VIEW_SWEEP_MS = 760;
+        const STAIR_HIGHLIGHT_COLOR = "#e1e1df";
         const BATHROOM_HIGHLIGHT_COLOR = "#8ea6c4";
         const BATHROOM_WOMEN_HIGHLIGHT_COLOR = "#ba93ae";
+        const BATHROOM_UNISEX_HIGHLIGHT_COLOR_A = "#e1e1df";
+        const BATHROOM_UNISEX_HIGHLIGHT_COLOR_B = "#e1e1df";
         const ELEVATOR_HIGHLIGHT_COLOR = "#f0f3fa";
         const STAIR_ELEVATOR_HIGHLIGHT_OPTIONS = {
             emissiveIntensity: 0.24,
@@ -1996,13 +2409,15 @@
             /(?:^|[^a-z0-9])(?:bath(?:room)?s?(?:[_-]?\d+)?|rest[\s_-]*rooms?(?:[_-]?\d+)?|wash[\s_-]*rooms?(?:[_-]?\d+)?|lavator(?:y|ies)(?:[_-]?\d+)?|toilet(?:s)?(?:[_-]?\d+)?|wc(?:[_-]?\d+)?|rr(?:[_-]?\d+)?)(?:[^a-z0-9]|$)/i;
         const BATHROOM_WOMEN_NAME_RE = /(?:^|[^a-z0-9])(girls?|women(?:'s)?|female|lad(?:y|ies))(?:[^a-z0-9]|$)/i;
         const BATHROOM_MEN_NAME_RE = /(?:^|[^a-z0-9])(boys?|men(?:'s)?|male)(?:[^a-z0-9]|$)/i;
+        const BATHROOM_UNISEX_NAME_RE =
+            /(?:^|[^a-z0-9])(?:(?:band[\s_-]*bath(?:room)?\d*)|(?:mods?[\s_-]*staff[\s_-]*bath(?:room)?\d*)|(?:unisex|gender[\s_-]*neutral))(?:[^a-z0-9]|$)/i;
         const BATHROOM_LOCKER_ROOM_RE = /(?:^|[^a-z0-9])locker[\s_-]*room(?:[^a-z0-9]|$)/i;
         const ELEVATOR_NAME_RE = /(?:^|[^a-z0-9])(elevator|lift)(?:[^a-z0-9]|$)/i;
         const ROOM_LABEL_CODE_RE =
             /(?:^|[^a-z0-9])([a-z]{1,3}\d{2,4}[a-z]?)(?:[^a-z0-9]|$)/i;
         const ROOM_LABEL_FORCED_INCLUDE_RE = /(?:courtyard|breezeway|bridge|cafeteria|auditorium|lecture[\s_-]*hall|library|gym|clinic|kitchen)/i;
         const ROOM_LABEL_ALLOW_RE =
-            /(?:(?:^|[^a-z0-9])[a-z]{1,3}\d{2,4}[a-z]?(?:[^a-z0-9]|$)|bathroom|cafeteria|auditorium|clinic|kitchen|gym|locker|library|office|career[\s_-]*center|courtyard|breezeway|bridge|band|percussion|orchestra|atrium|commons|media|studio|classroom)/i;
+            /(?:(?:^|[^a-z0-9])[a-z]{1,3}\d{2,4}[a-z]?(?:[^a-z0-9]|$)|bathroom|cafeteria|auditorium|clinic|kitchen|gym|locker|library|office|career[\s_-]*center|courtyard|breezeway|bridge|band|percussion|orchestra|atrium|commons|media|studio|classroom|mod(?:s)?|trailer(?:s)?)/i;
         const ROOM_LABEL_FRONT_ENTRANCE_RE =
             /(?:door#1(?!\d)|main[\s_-]*outer[\s_-]*door(?:[#_\s-]*\d+)?|main[\s_-]*door(?:[#_\s-]*\d+)?|front[\s_-]*entrance|main[\s_-]*entrance)/i;
         const ROOM_LABEL_EXCLUDE_RE =
@@ -2252,6 +2667,9 @@
         scene.add(roomLabelGroup);
 
         const controls = new PointerLockControls(camera, renderer.domElement);
+        const startupLoadingEl = document.getElementById("startup-loading");
+        const startupLoadingTextEl = document.getElementById("startup-loading-text");
+        const startupLoadingBarEl = document.getElementById("startup-loading-bar");
         const pauseOverlay = document.getElementById("pause-overlay");
         const cursorTint = document.getElementById("cursor-tint");
         const hudPanel = document.getElementById("hud");
@@ -2296,6 +2714,8 @@
         let entryFlyInStartAt = 0;
         let pauseOverlayMode = "pause";
         let loadedModel = null;
+        let startupLoadingDismissed = false;
+        let startupLoadingProgress = 0;
 
         function setAuraPositionFromClient(clientX, clientY) {
             const width = Math.max(1, window.innerWidth);
@@ -2372,6 +2792,28 @@
             syncIntroVisualState();
         }
 
+        function setStartupLoadingProgress(percent, text) {
+            const nextPercent = THREE.MathUtils.clamp(percent, 0, 100);
+            startupLoadingProgress = Math.max(startupLoadingProgress, nextPercent);
+            if (startupLoadingBarEl) {
+                const visualPercent = Math.max(6, startupLoadingProgress);
+                startupLoadingBarEl.style.width = `${visualPercent.toFixed(1)}%`;
+            }
+            if (text && startupLoadingTextEl) startupLoadingTextEl.textContent = text;
+        }
+
+        function markStartupReady() {
+            if (startupLoadingDismissed) return;
+            startupLoadingDismissed = true;
+            setStartupLoadingProgress(100, "Starting intro...");
+            document.body.classList.remove("startup-loading");
+            document.body.classList.add("startup-ready");
+            window.setTimeout(() => {
+                if (startupLoadingEl) startupLoadingEl.hidden = true;
+                document.body.classList.remove("startup-ready");
+            }, STARTUP_LOADING_FADE_MS);
+        }
+
         function beginPostLoadExperience() {
             if (!loadedModel) return;
             if (!controls.isLocked) {
@@ -2388,6 +2830,7 @@
             } else if (entryFlyInPending) {
                 startEntryFlyIn(loadedModel, { force: true });
             }
+            markStartupReady();
         }
 
         function resizeSceneBackgroundTexture() {
@@ -2453,6 +2896,16 @@
                 return;
             }
 
+            const introOverlayActive =
+                document.body.classList.contains("paused-view") &&
+                pauseOverlayMode === "intro";
+            if (introOverlayActive) {
+                setAuraPositionFromClient(lastPointerClientX, lastPointerClientY);
+                if (cursorTint) cursorTint.style.opacity = "0";
+                drawSceneBackground("intro");
+                return;
+            }
+
             setAuraPositionFromClient(lastPointerClientX, lastPointerClientY);
             if (cursorTint) cursorTint.style.opacity = "";
             drawSceneBackground("paused");
@@ -2462,6 +2915,9 @@
             if (controls.isLocked) return;
             if (isIntroPreCardPhase()) return;
             setAuraPositionFromClient(event.clientX, event.clientY);
+            const introOverlayActive =
+                document.body.classList.contains("paused-view") &&
+                pauseOverlayMode === "intro";
             if (
                 document.body.classList.contains("paused-view") &&
                 pauseCard &&
@@ -2479,7 +2935,7 @@
                     resetCardEdgeGlow(pauseCard);
                 }
             }
-            drawSceneBackground("paused");
+            drawSceneBackground(introOverlayActive ? "intro" : "paused");
         });
 
         resizeSceneBackgroundTexture();
@@ -2647,6 +3103,8 @@
 
         function isRelockUiTarget(target) {
             if (!(target instanceof Element)) return false;
+            const sidebarUi = target.closest("#hud, #side-menu, #hud-collapse-btn, #menu-collapse-btn");
+            if (sidebarUi) return true;
             const interactive = target.closest(
                 "button, input, select, textarea, label, a, [role='button'], [data-no-relock]"
             );
@@ -2655,6 +3113,7 @@
 
         function tryRelockFromPointer(event) {
             if (isCanvasPointerLocked()) return;
+            if (document.body.classList.contains("startup-loading")) return;
             if (event.button !== undefined && event.button !== 0) return;
             if (pauseOverlayMode === "intro") {
                 if (introEnterRequested) {
@@ -2697,6 +3156,7 @@
             introEnterRequested = false;
             pendingLockPoseSync = false;
             introEnterLockTimer = clearTimer(introEnterLockTimer);
+            resetMovementInputState();
             setPausedState(true);
         });
 
@@ -2747,6 +3207,16 @@
         const introIdleBlendFromLook = new THREE.Vector3();
         const introIdleBlendPos = new THREE.Vector3();
         const introIdleBlendLook = new THREE.Vector3();
+        const topViewStartPos = new THREE.Vector3();
+        const topViewStartLook = new THREE.Vector3();
+        const topViewEndPos = new THREE.Vector3();
+        const topViewEndLook = new THREE.Vector3();
+        const topViewNowPos = new THREE.Vector3();
+        const topViewNowLook = new THREE.Vector3();
+        const recenterTargetPos = new THREE.Vector3();
+        const recenterTargetLook = new THREE.Vector3();
+        const topViewBoundsCenter = new THREE.Vector3();
+        const topViewBoundsSize = new THREE.Vector3();
         const cameraForward = new THREE.Vector3();
         const UP = new THREE.Vector3(0, 1, 0);
         const DOWN = new THREE.Vector3(0, -1, 0);
@@ -2786,6 +3256,7 @@
         const stairHighlightMeshes = new Set();
         const bathroomHighlightMeshes = new Set();
         const bathroomWomenHighlightMeshes = new Set();
+        const bathroomUnisexHighlightMeshes = new Set();
         const elevatorHighlightMeshes = new Set();
         const roomLabels = [];
         let nextSearchHighlightId = 1;
@@ -2812,6 +3283,9 @@
         let collapsePositionUntil = 0;
         let initialPanelsEntryPlayed = false;
         let collapseButtonsResizeObserver = null;
+        let topViewAnimating = false;
+        let topViewAnimStart = 0;
+        let topViewAnimDuration = TOP_VIEW_SWEEP_MS;
 
         const collisionVal = document.getElementById("collision-val");
         const speedVal = document.getElementById("speed-val");
@@ -2820,6 +3294,8 @@
         const clearSearchesBtn = document.getElementById("clear-searches-btn");
         const hudCollapseBtn = document.getElementById("hud-collapse-btn");
         const menuCollapseBtn = document.getElementById("menu-collapse-btn");
+        bindInteractiveCardGlow(hudCollapseBtn);
+        bindInteractiveCardGlow(menuCollapseBtn);
         const visualEnhanceBtn = document.getElementById("visual-enhance-btn");
         const hdrBtn = document.getElementById("hdr-btn");
         const sunSimBtn = document.getElementById("sun-sim-btn");
@@ -2831,6 +3307,8 @@
         const roomLabelsBtn = document.getElementById("room-labels-btn");
         const lookAtVal = document.getElementById("look-at-val");
         const splitFloorsBtn = document.getElementById("split-floors-btn");
+        const topViewBtn = document.getElementById("top-view-btn");
+        const recenterBtn = document.getElementById("recenter-btn");
         const statusEl = document.getElementById("status");
         const PAUSED_STATUS_TEXT = "Paused. Click the 3D model view to re-enter";
 
@@ -3373,10 +3851,19 @@
             return combined;
         }
 
+        function hashString(value) {
+            let hash = 0;
+            for (let i = 0; i < value.length; i += 1) {
+                hash = (hash * 31 + value.charCodeAt(i)) | 0;
+            }
+            return hash;
+        }
+
         function collectCategoryHighlightMeshes(model) {
             stairHighlightMeshes.clear();
             bathroomHighlightMeshes.clear();
             bathroomWomenHighlightMeshes.clear();
+            bathroomUnisexHighlightMeshes.clear();
             elevatorHighlightMeshes.clear();
             if (!model) return;
 
@@ -3386,6 +3873,10 @@
                 if (nodeOrAncestorNameMatches(node, BATHROOM_NAME_RE)) {
                     const names = collectNodeAndAncestorNames(node);
                     if (BATHROOM_LOCKER_ROOM_RE.test(names)) return;
+                    if (BATHROOM_UNISEX_NAME_RE.test(names)) {
+                        bathroomUnisexHighlightMeshes.add(node);
+                        return;
+                    }
                     const isWomen = BATHROOM_WOMEN_NAME_RE.test(names) && !BATHROOM_MEN_NAME_RE.test(names);
                     if (isWomen) bathroomWomenHighlightMeshes.add(node);
                     else bathroomHighlightMeshes.add(node);
@@ -3523,6 +4014,34 @@
                     key: `room:${code}`,
                     label: code,
                     priority: 7.8,
+                    special: false,
+                    alwaysVisible: false,
+                    sizeScale: 1,
+                    sizeTier: "code"
+                };
+            }
+
+            const modMatch = cleaned.match(/(?:^|[^a-z0-9])mod(?:s)?[^a-z0-9]*(\d{1,2})(?:[^a-z0-9]|$)/i);
+            if (modMatch) {
+                const modNumber = String(Number(modMatch[1]));
+                return {
+                    key: `room:mod-${modNumber}`,
+                    label: `Mod ${modNumber}`,
+                    priority: 7.4,
+                    special: false,
+                    alwaysVisible: false,
+                    sizeScale: 1,
+                    sizeTier: "code"
+                };
+            }
+
+            const trailerMatch = cleaned.match(/(?:^|[^a-z0-9])trailer(?:s)?[^a-z0-9]*(\d{1,2})(?:[^a-z0-9]|$)/i);
+            if (trailerMatch) {
+                const trailerNumber = String(Number(trailerMatch[1]));
+                return {
+                    key: `room:trailer-${trailerNumber}`,
+                    label: `Trailer ${trailerNumber}`,
+                    priority: 7.4,
                     special: false,
                     alwaysVisible: false,
                     sizeScale: 1,
@@ -4270,6 +4789,14 @@
                     if (!mesh || !mesh.material) continue;
                     setMeshHighlight(mesh, BATHROOM_WOMEN_HIGHLIGHT_COLOR, STAIR_ELEVATOR_HIGHLIGHT_OPTIONS, 1);
                 }
+                for (const mesh of bathroomUnisexHighlightMeshes) {
+                    if (!mesh || !mesh.material) continue;
+                    const colorHex =
+                        (hashString(mesh.uuid || mesh.name || "") & 1) === 0
+                            ? BATHROOM_UNISEX_HIGHLIGHT_COLOR_A
+                            : BATHROOM_UNISEX_HIGHLIGHT_COLOR_B;
+                    setMeshHighlight(mesh, colorHex, STAIR_ELEVATOR_HIGHLIGHT_OPTIONS, 1);
+                }
             }
             if (highlightElevatorsEnabled) {
                 for (const mesh of elevatorHighlightMeshes) {
@@ -4322,8 +4849,41 @@
             });
         }
 
+        function captureSearchListScrollState() {
+            const state = {
+                listScrollTop: 0,
+                objectScrollByEntryId: new Map()
+            };
+            if (!searchList) return state;
+
+            state.listScrollTop = searchList.scrollTop;
+            const objectLists = searchList.querySelectorAll(".search-entry[data-entry-id] .search-object-list");
+            for (const objectListEl of objectLists) {
+                const entryEl = objectListEl.closest(".search-entry");
+                const entryId = entryEl?.dataset?.entryId;
+                if (!entryId) continue;
+                state.objectScrollByEntryId.set(entryId, objectListEl.scrollTop);
+            }
+            return state;
+        }
+
+        function restoreSearchListScrollState(state) {
+            if (!searchList || !state) return;
+            searchList.scrollTop = state.listScrollTop || 0;
+            const objectLists = searchList.querySelectorAll(".search-entry[data-entry-id] .search-object-list");
+            for (const objectListEl of objectLists) {
+                const entryEl = objectListEl.closest(".search-entry");
+                const entryId = entryEl?.dataset?.entryId;
+                if (!entryId) continue;
+                const savedScroll = state.objectScrollByEntryId.get(entryId);
+                if (savedScroll == null) continue;
+                objectListEl.scrollTop = savedScroll;
+            }
+        }
+
         function renderSearchHighlights() {
             if (!searchList) return;
+            const priorScrollState = captureSearchListScrollState();
 
             clearSearchesBtn.disabled = searchHighlights.length === 0;
             if (searchHighlights.length === 0) {
@@ -4346,14 +4906,16 @@
                                   .map(
                                       (objectEntry) =>
                                           `<div class="search-object-row" title="${escapeHtml(objectEntry.name)}">
-                                              <input
-                                                  type="checkbox"
-                                                  data-action="toggle-object"
-                                                  data-entry-id="${entry.id}"
-                                                  data-object-id="${objectEntry.id}"
-                                                  ${objectEntry.active ? "checked" : ""}
-                                              >
-                                              <span class="search-object-name">${escapeHtml(objectEntry.name)}</span>
+                                              <label class="search-object-toggle">
+                                                  <input
+                                                      type="checkbox"
+                                                      data-action="toggle-object"
+                                                      data-entry-id="${entry.id}"
+                                                      data-object-id="${objectEntry.id}"
+                                                      ${objectEntry.active ? "checked" : ""}
+                                                  >
+                                                  <span class="search-object-name">${escapeHtml(objectEntry.name)}</span>
+                                              </label>
                                               <button
                                                   type="button"
                                                   class="object-teleport-btn"
@@ -4380,20 +4942,21 @@
                         )
                         .join("");
 
-                    return `<div class="search-entry${entry.visible ? "" : " is-hidden"}${entry.expanded ? " is-expanded" : ""}${entry.paletteOpen ? " show-palette" : ""}">
+                    return `<div class="search-entry${entry.visible ? "" : " is-hidden"}${entry.expanded ? " is-expanded" : ""}${entry.paletteOpen ? " show-palette" : ""}" data-entry-id="${entry.id}">
                         <div class="search-entry-head">
-                            <input
-                                class="search-vis-toggle"
-                                type="checkbox"
-                                title="Toggle this search visibility"
-                                data-action="toggle-entry-visibility"
-                                data-entry-id="${entry.id}"
-                                ${entry.visible ? "checked" : ""}
-                            >
-                            <div class="search-term">
-                                <span class="search-term-name" title="${escapeHtml(entry.term)}">${escapeHtml(entry.term)}</span>
-                                <span class="search-term-meta">${activeCount}/${entry.objects.length} objects active</span>
-                            </div>
+                            <label class="search-entry-toggle" title="Toggle this search visibility">
+                                <input
+                                    class="search-vis-toggle"
+                                    type="checkbox"
+                                    data-action="toggle-entry-visibility"
+                                    data-entry-id="${entry.id}"
+                                    ${entry.visible ? "checked" : ""}
+                                >
+                                <div class="search-term">
+                                    <span class="search-term-name" title="${escapeHtml(entry.term)}">${escapeHtml(entry.term)}</span>
+                                    <span class="search-term-meta">${activeCount}/${entry.objects.length} objects active</span>
+                                </div>
+                            </label>
                             <button type="button" class="entry-btn color-btn" data-action="toggle-palette" data-entry-id="${entry.id}" title="Choose highlight color">
                                 <span class="color-dot" style="background: ${entry.colorHex};"></span>
                                 Color
@@ -4425,6 +4988,7 @@
                 .join("");
 
             searchList.innerHTML = entriesHtml;
+            restoreSearchListScrollState(priorScrollState);
         }
 
         function addSearchHighlight(term, relatedMeshes) {
@@ -4456,12 +5020,12 @@
             return term
                 .toLowerCase()
                 .split(/[^a-z0-9]+/)
-                .filter((token) => token.length >= 3);
+                .filter((token) => token.length >= 3 || /^\d{1,4}[a-z]?$/.test(token));
         }
 
         function extractRoomCode(text) {
             if (!text) return "";
-            const match = text.toLowerCase().match(/\b([a-z]?\d{2,4}[a-z]?)\b/);
+            const match = text.toLowerCase().match(/\b([a-z]?\d{1,4}[a-z]?)\b/);
             return match ? match[1] : "";
         }
 
@@ -4469,14 +5033,24 @@
             if (!name) return false;
             const lower = name.toLowerCase();
             if (term && lower.includes(term)) return true;
+            const compactTerm = (term || "").replace(/[^a-z0-9]+/g, "");
+            if (compactTerm.length >= 4) {
+                const compactName = lower.replace(/[^a-z0-9]+/g, "");
+                if (compactName.includes(compactTerm)) return true;
+            }
             if (roomCodeRe && roomCodeRe.test(lower)) return true;
             if (termTokens.length === 0) return false;
 
             let tokenHits = 0;
+            const tokenThreshold = termTokens.length <= 1 ? 1 : 2;
             for (const token of termTokens) {
-                if (lower.includes(token)) {
+                const isNumericToken = /^\d{1,4}[a-z]?$/.test(token);
+                const tokenMatched = isNumericToken
+                    ? new RegExp(`(?:^|[^a-z0-9])${escapeRegExp(token)}(?:[^a-z0-9]|$)`).test(lower)
+                    : lower.includes(token);
+                if (tokenMatched) {
                     tokenHits += 1;
-                    if (tokenHits >= 2) return true;
+                    if (tokenHits >= tokenThreshold) return true;
                 }
             }
             return false;
@@ -4963,6 +5537,124 @@
             return x * x * x * (x * (x * 6 - 15) + 10);
         }
 
+        function captureCurrentLookTarget(outTarget, distance = 28) {
+            controls.getDirection(cameraForward);
+            outTarget.copy(camera.position).addScaledVector(cameraForward, distance);
+        }
+
+        function computeTopViewPose(outPos, outLook, options = {}) {
+            const { floorValueOverride = null } = options;
+            if (!loadedModel || !outPos || !outLook) return false;
+
+            const hasFloor2Nodes = !!floor2Root || floor2Nodes.length > 0;
+            let restoreFloorValue = null;
+            if (floorValueOverride != null && hasFloor2Nodes) {
+                restoreFloorValue = floor2CurrentValue;
+                applyFloor2Value(floorValueOverride);
+            }
+
+            const bounds = new THREE.Box3().setFromObject(loadedModel);
+            if (restoreFloorValue != null) {
+                applyFloor2Value(restoreFloorValue);
+            }
+            if (bounds.isEmpty()) return false;
+
+            bounds.getCenter(topViewBoundsCenter);
+            bounds.getSize(topViewBoundsSize);
+            const halfX = Math.max(1, topViewBoundsSize.x * 0.5);
+            const halfZ = Math.max(1, topViewBoundsSize.z * 0.5);
+            const vFov = THREE.MathUtils.degToRad(camera.fov);
+            const hFov = 2 * Math.atan(Math.tan(vFov * 0.5) * Math.max(0.4, camera.aspect));
+            const fitByDepth = halfZ / Math.max(0.001, Math.tan(vFov * 0.5));
+            const fitByWidth = halfX / Math.max(0.001, Math.tan(hFov * 0.5));
+            const fitHeight = Math.max(fitByDepth, fitByWidth);
+            const margin = Math.max(12, topViewBoundsSize.y * 0.45, Math.max(halfX, halfZ) * 0.15);
+            const topY = bounds.max.y + fitHeight + margin;
+            const topZOffset = Math.max(2.2, topViewBoundsSize.z * 0.03);
+
+            outPos.set(topViewBoundsCenter.x, topY, topViewBoundsCenter.z + topZOffset);
+            outLook.set(
+                topViewBoundsCenter.x,
+                bounds.min.y + topViewBoundsSize.y * 0.35,
+                topViewBoundsCenter.z
+            );
+            return true;
+        }
+
+        function startTopViewSweep(endPos, endLook, durationMs = TOP_VIEW_SWEEP_MS) {
+            topViewStartPos.copy(camera.position);
+            captureCurrentLookTarget(topViewStartLook);
+            topViewEndPos.copy(endPos);
+            topViewEndLook.copy(endLook);
+            topViewAnimStart = performance.now();
+            topViewAnimDuration = Math.max(260, durationMs);
+            topViewAnimating = true;
+        }
+
+        function moveToTopView(options = {}) {
+            const { floorValueOverride = null, durationMs = TOP_VIEW_SWEEP_MS, announce = true } = options;
+            if (!loadedModel) {
+                if (announce && statusEl) statusEl.textContent = "Model is still loading.";
+                return false;
+            }
+            if (!computeTopViewPose(topViewNowPos, topViewNowLook, { floorValueOverride })) {
+                if (announce && statusEl) statusEl.textContent = "Unable to frame top view.";
+                return false;
+            }
+            startTopViewSweep(topViewNowPos, topViewNowLook, durationMs);
+            if (announce && statusEl) statusEl.textContent = "Top view centered.";
+            return true;
+        }
+
+        function computeRecenterPose(outPos, outLook) {
+            if (!loadedModel || !outPos || !outLook) return false;
+            const bounds = new THREE.Box3().setFromObject(loadedModel);
+            if (bounds.isEmpty()) return false;
+
+            bounds.getCenter(introBoundsCenter);
+            bounds.getSize(introBoundsSize);
+            const span = Math.max(1, Math.max(introBoundsSize.x, introBoundsSize.z));
+
+            const recenterY = bounds.min.y + Math.max(introBoundsSize.y * 0.7, PLAYER_EYE_HEIGHT + span * 0.05);
+            outPos.set(
+                introBoundsCenter.x - introBoundsSize.x * 0.05,
+                recenterY,
+                bounds.max.z + Math.max(introBoundsSize.z * 0.04, span * 0.03)
+            );
+            outLook.set(
+                introBoundsCenter.x,
+                bounds.min.y + introBoundsSize.y * 0.45,
+                introBoundsCenter.z
+            );
+            return true;
+        }
+
+        function recenterToDefault(options = {}) {
+            const { durationMs = Math.round(TOP_VIEW_SWEEP_MS * 0.82), announce = true } = options;
+            if (!computeRecenterPose(recenterTargetPos, recenterTargetLook)) {
+                if (announce && statusEl) statusEl.textContent = "Unable to recenter right now.";
+                return false;
+            }
+            startTopViewSweep(recenterTargetPos, recenterTargetLook, durationMs);
+            if (announce && statusEl) statusEl.textContent = "Re-centered near the school.";
+            return true;
+        }
+
+        function updateTopViewAnimation(nowMs) {
+            if (!topViewAnimating) return;
+            const t = Math.min(1, (nowMs - topViewAnimStart) / topViewAnimDuration);
+            const eased = easeInOutCubic(t);
+            topViewNowPos.lerpVectors(topViewStartPos, topViewEndPos, eased);
+            topViewNowLook.lerpVectors(topViewStartLook, topViewEndLook, eased);
+            applyCameraPose(topViewNowPos, topViewNowLook);
+            if (t >= 1) {
+                topViewAnimating = false;
+                applyCameraPose(topViewEndPos, topViewEndLook);
+                playerVelocity.set(0, 0, 0);
+                playerOnFloor = false;
+            }
+        }
+
         function findFloor2Collection(model) {
             let result = null;
             model.traverse((node) => {
@@ -5162,6 +5854,11 @@
         function findAndSelectRoom() {
             const rawTerm = searchInput.value.trim();
             const term = rawTerm.toLowerCase();
+            const termTokens = tokenizeSearchTerm(rawTerm);
+            const roomCode = extractRoomCode(rawTerm);
+            const roomCodeRe = roomCode
+                ? new RegExp(`(?:^|[^a-z0-9])${escapeRegExp(roomCode)}(?:[^a-z0-9]|$)`, "i")
+                : null;
 
             if (!rawTerm) {
                 statusEl.textContent = "Enter a room/mesh name to search.";
@@ -5177,7 +5874,13 @@
             loadedModel.traverse((node) => {
                 if (found || !node.isMesh || !node.name) return;
                 if (meshIsExcludedFromRoomTools(node)) return;
-                if (node.name.toLowerCase().includes(term)) found = node;
+                const lowerName = node.name.toLowerCase();
+                if (
+                    lowerName.includes(term) ||
+                    nameMatchesRoomHint(node.name, term, termTokens, roomCodeRe)
+                ) {
+                    found = node;
+                }
             });
 
             if (!found) {
@@ -5377,6 +6080,16 @@
             }
             startFloorSplitAnimation(!floor2IsSeparated);
         });
+        if (topViewBtn) {
+            topViewBtn.addEventListener("click", () => {
+                moveToTopView({ announce: true });
+            });
+        }
+        if (recenterBtn) {
+            recenterBtn.addEventListener("click", () => {
+                recenterToDefault({ announce: true });
+            });
+        }
         searchInput.addEventListener("keydown", (event) => {
             if (event.key === "Enter") {
                 event.preventDefault();
@@ -5402,6 +6115,55 @@
             moveDown = keyState.ShiftLeft || keyState.ShiftRight;
         }
 
+        function resetMovementInputState() {
+            for (const code in keyState) keyState[code] = false;
+            moveForward = false;
+            moveBackward = false;
+            moveLeft = false;
+            moveRight = false;
+            moveUp = false;
+            moveDown = false;
+            spaceHoldReadyAt = -Infinity;
+            lastSpacePress = -Infinity;
+            syncMoveFlags();
+        }
+
+        function tryStartWalkJump(nowMs, options = {}) {
+            const {
+                allowCoyote = true,
+                allowSnap = true,
+                requireGrounded = false
+            } = options;
+
+            if (flyMode) return false;
+            if (requireGrounded && !playerOnFloor) return false;
+
+            let canJump = playerOnFloor || (allowCoyote && (nowMs - lastGroundedAt <= COYOTE_TIME_MS));
+            if (!canJump && allowSnap) {
+                const snap = probeGround(FLOOR_SNAP_DISTANCE);
+                if (snap !== null) {
+                    if (snap > 0) {
+                        translatePlayer(0, -snap, 0);
+                    }
+                    playerOnFloor = true;
+                    lastGroundedAt = nowMs;
+                    canJump = true;
+                }
+            }
+
+            if (!canJump) return false;
+
+            playerVelocity.y = JUMP_VELOCITY;
+            walkAirSpeedCap = Math.max(
+                Math.hypot(playerVelocity.x, playerVelocity.z),
+                currentWalkSpeed() * WALK_AIR_CONTROL_MIN_FACTOR
+            );
+            playerOnFloor = false;
+            lastGroundedAt = -Infinity;
+            lastJumpAt = nowMs;
+            return true;
+        }
+
         document.addEventListener("keydown", (event) => {
             if (event.repeat) return;
 
@@ -5420,13 +6182,19 @@
             if (event.code === "Space") {
                 event.preventDefault();
                 const now = performance.now();
-                const isDoubleSpace = now - lastSpacePress <= DOUBLE_SPACE_MS;
-                lastSpacePress = now;
+                const sinceLastSpace = now - lastSpacePress;
+                const isDoubleSpace =
+                    sinceLastSpace >= 30 &&
+                    sinceLastSpace <= DOUBLE_SPACE_MS;
 
                 if (isDoubleSpace) {
-                    const wasFlyMode = flyMode;
-                    toggleMode();
-                    if (!wasFlyMode && flyMode) {
+                    lastSpacePress = -Infinity;
+                    const nextFlyMode = !flyMode;
+                    const applied = setMode(nextFlyMode);
+                    if (applied) {
+                        statusEl.textContent = flyMode ? "Fly mode enabled." : "Walk mode enabled.";
+                    }
+                    if (applied && nextFlyMode) {
                         // Minecraft-like behavior: second tap that toggles Fly can continue upward immediately when held.
                         spaceHoldReadyAt = now;
                         moveUp = true;
@@ -5435,36 +6203,18 @@
                     }
                     return;
                 }
+                lastSpacePress = now;
 
                 if (flyMode) {
                     // Brief guard avoids accidental upward nudge when user is actually double-tapping to drop.
                     spaceHoldReadyAt = now + FLY_ASCEND_TAP_GUARD_MS;
                     moveUp = false;
                 } else {
-                    const nowMs = performance.now();
-                    let canJump = playerOnFloor || (nowMs - lastGroundedAt <= COYOTE_TIME_MS);
-                    if (!canJump) {
-                        const snap = probeGround(FLOOR_SNAP_DISTANCE);
-                        if (snap !== null) {
-                            if (snap > 0) {
-                                translatePlayer(0, -snap, 0);
-                            }
-                            playerOnFloor = true;
-                            lastGroundedAt = nowMs;
-                            canJump = true;
-                        }
-                    }
-                    if (!canJump) {
-                        return;
-                    }
-                    playerVelocity.y = JUMP_VELOCITY;
-                    walkAirSpeedCap = Math.max(
-                        Math.hypot(playerVelocity.x, playerVelocity.z),
-                        currentWalkSpeed() * WALK_AIR_CONTROL_MIN_FACTOR
-                    );
-                    playerOnFloor = false;
-                    lastGroundedAt = -Infinity;
-                    lastJumpAt = nowMs;
+                    tryStartWalkJump(performance.now(), {
+                        allowCoyote: true,
+                        allowSnap: true,
+                        requireGrounded: false
+                    });
                 }
             }
         });
@@ -5480,9 +6230,7 @@
         });
 
         window.addEventListener("blur", () => {
-            for (const code in keyState) keyState[code] = false;
-            moveUp = false;
-            syncMoveFlags();
+            resetMovementInputState();
         });
 
         function getForwardVector() {
@@ -5585,6 +6333,14 @@
             }
 
             camera.position.copy(playerCollider.end);
+            if (!flyMode && playerOnFloor && keyState.Space) {
+                // Hold-to-bunny-hop: when space is held in walk mode, jump again immediately on landing.
+                tryStartWalkJump(performance.now(), {
+                    allowCoyote: false,
+                    allowSnap: false,
+                    requireGrounded: true
+                });
+            }
             if (!flyMode && playerOnFloor) {
                 lastGroundLateralSpeed = Math.hypot(playerVelocity.x, playerVelocity.z);
             }
@@ -5607,6 +6363,7 @@
             return { totalMeshes, colliderMeshes: collisionMeshes.length };
         }
 
+        setStartupLoadingProgress(8, "Loading model...");
         const loader = new GLTFLoader();
         loader.load(
             "floorplan.glb",
@@ -5636,18 +6393,22 @@
                 }
                 applyVisualQualitySettings();
                 applyHighlightsFromSearches();
+                setStartupLoadingProgress(100, "Preparing intro...");
                 beginPostLoadExperience();
             },
             (xhr) => {
                 if (!xhr.total) return;
                 const pct = Math.round((xhr.loaded / xhr.total) * 100);
                 statusEl.textContent = `Loading model... ${pct}%`;
+                setStartupLoadingProgress(5 + pct * 0.9, `Loading model... ${pct}%`);
             },
             (error) => {
                 console.error("Model load failed:", error);
                 introCameraAnimating = false;
                 if (pauseOverlayMode === "intro") setIntroCardsReady(true);
                 statusEl.textContent = "Failed to load floorplan.glb. Use a local HTTP server and verify file path.";
+                setStartupLoadingProgress(100, "Model load failed.");
+                markStartupReady();
             }
         );
 
@@ -5689,13 +6450,18 @@
             const frameDelta = Math.min(0.05, (time - prevTime) / 1000);
             prevTime = time;
             updateFloorSplitAnimation(time);
+            updateTopViewAnimation(time);
             if (!controls.isLocked) {
-                updateIntroCameraAnimation(time);
-                updateIntroIdleOrbit(time, frameDelta);
+                if (!topViewAnimating) {
+                    updateIntroCameraAnimation(time);
+                    updateIntroIdleOrbit(time, frameDelta);
+                }
             }
 
             if (controls.isLocked) {
-                if (entryFlyInAnimating) {
+                if (topViewAnimating) {
+                    playerVelocity.set(0, 0, 0);
+                } else if (entryFlyInAnimating) {
                     updateEntryFlyInAnimation(time);
                 } else if (collisionsReady && collisionEnabled) {
                     const dynamicSteps = Math.max(
