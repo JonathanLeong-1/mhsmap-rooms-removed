@@ -5,3 +5,4 @@ Web-based interactive 3D school navigator built with Three.js and blender model
  - accurate blender model of full school campus
  - room search, flying, floor separation, etc.
  - pretty cool
+ - rooms removed because school models are illegal unfortunately
