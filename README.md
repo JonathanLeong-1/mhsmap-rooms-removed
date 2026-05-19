@@ -1,0 +1,7 @@
+# McLean High School Campus Navigator
+
+Web-based interactive 3D school navigator built with Three.js and blender model
+ - 1st person 3d campus nagivation
+ - accurate blender model of school campus
+ - room search, floor separationm highlighting, etc.
+ - pretty cool
